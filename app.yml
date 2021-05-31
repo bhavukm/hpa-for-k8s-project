@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-project
+spec:
+  selector:
+    matchLabels:
+      app: k8s-project
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+
+  template:
+    metadata:
+      labels:
+        app: k8s-project
+    spec:
+      containers:
+      - name: k8s-project
+        image: bhavukm/k8s-project
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 200m
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-project
+  labels:
+    app: k8s-project
+spec:
+  selector:
+    app: k8s-project
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 80
+      nodePort: 31200
+      
+      
